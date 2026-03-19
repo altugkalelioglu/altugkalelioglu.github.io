@@ -2,7 +2,10 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="theme-color" content="#020817" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <title>Life Productivity Control Panel</title>
   <style>
     :root{
@@ -17,10 +20,10 @@
     .eyebrow{font-size:12px;letter-spacing:.25em;text-transform:uppercase;color:var(--muted)}
     h1{font-size:clamp(28px,4vw,50px);margin:6px 0 0;line-height:1.02}
     .subtitle{color:var(--muted);max-width:900px;margin-top:10px}
-    .btn{border:1px solid var(--border2);background:var(--panel);color:var(--text);border-radius:16px;padding:10px 14px;cursor:pointer;font:inherit}
+    .btn{border:1px solid var(--border2);background:var(--panel);color:var(--text);border-radius:16px;padding:12px 14px;cursor:pointer;font:inherit;min-height:46px}
     .btn:hover{border-color:#475569}.btn.primary{background:rgba(var(--indigo),.18);border-color:rgba(var(--indigo),.35);color:#c7d2fe}
     .btn.soft{background:#0b1220}.btn.danger{background:rgba(var(--rose),.12);border-color:rgba(var(--rose),.22);color:#fecdd3}
-    .tabs{display:flex;gap:10px;flex-wrap:wrap;margin:14px 0 18px}.tab.active{background:rgba(var(--indigo),.18);border-color:rgba(var(--indigo),.35);color:#c7d2fe}
+    .tabs{display:flex;gap:10px;flex-wrap:wrap;margin:14px 0 18px;position:sticky;top:0;z-index:20;background:linear-gradient(180deg,rgba(2,6,23,.98),rgba(2,6,23,.86));padding:8px 0}.tab.active{background:rgba(var(--indigo),.18);border-color:rgba(var(--indigo),.35);color:#c7d2fe}
     .collapsible{overflow:hidden;transition:max-height .25s ease,opacity .2s ease}.hidden-collapsed{max-height:0;opacity:0}.shown-collapsed{max-height:500px;opacity:1;margin-bottom:18px}
     .card{background:rgba(15,23,42,.92);border:1px solid var(--border);border-radius:28px;box-shadow:var(--shadow);padding:18px}
     .rules-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px}
@@ -58,7 +61,7 @@
     <div>
       <div class="eyebrow">Life Operating System</div>
       <h1>Weekly Productivity Control Panel</h1>
-      <div class="subtitle">Place your own blocks into the day. No default anchors. No default limit bars until you actually log something.</div>
+      <div class="subtitle">Place your own blocks into the day. Optimized for iPhone browser use and Add to Home Screen.</div>
     </div>
     <button id="rulesToggle" class="btn soft">Rules</button>
   </div>
@@ -120,7 +123,7 @@ function saveState(){
         id:block.id,
         title:block.title,
         startTime:block.startTime,
-        duration: fmtDur(block.durationMin || parseDur(block.duration))
+        duration: `${block.durationMin || parseDur(block.duration)}m`
       }))
     }))
   };
@@ -226,28 +229,7 @@ function todayHTML(){
           </div>
         </div>
 
-        <div class="mini-card">
-          <div class="small" style="margin-bottom:10px">Placed blocks</div>
-          <div class="stack">
-            ${day.blocks.length===0?`<div class="small">No blocks yet.</div>`:day.blocks.map(b=>`
-              <div class="placed-block ${isOverCap(b)?'placed-over':''}">
-                <div>
-                  <div style="font-weight:600">${esc(b.title)}</div>
-                  <div class="small" style="margin-top:6px">${b.startTime} → ${b.endTime}</div>
-                  <div class="small ${isOverCap(b)?'danger-text':''}">${fmtDur(b.durationMin)}${isOverCap(b)?` · over by ${b.durationMin-RULE_CAPS[b.title]}m`:''}</div>
-                </div>
-                <button class="btn danger" data-remove="${b.id}" style="padding:6px 10px">×</button>
-              </div>
-            `).join("")}
-          </div>
-        </div>
-
-        <div class="mini-card">
-          <div class="small" style="margin-bottom:10px">Logged limits</div>
-          ${Object.keys(state.usage).length===0?`<div class="small">Nothing logged yet.</div>`:Object.entries(state.usage).map(([k,v])=>`<div class="placed-block"><span>${esc(k)}</span><strong>${esc(v)}</strong></div>`).join("")}
-        </div>
-      </div>
-    </section>
+        </div></section>
 
     <section class="stack">
       <div class="card">
@@ -256,24 +238,7 @@ function todayHTML(){
           <div style="display:flex;gap:8px;flex-wrap:wrap">${state.week.map(d=>`<button class="btn ${state.selectedDay===d.day?"primary":"soft"}" data-day="${d.day}">${d.day}</button>`).join("")}</div>
         </div>
 
-        <div class="timeline-layout">
-          <div class="block-editor-list">
-            ${day.blocks.map(b=>`
-              <div class="block-editor-card ${isOverCap(b)?'over':''}">
-                <div style="font-weight:700">${esc(b.title)}</div>
-                <div class="small" style="margin-top:6px">${b.startTime} → ${b.endTime}</div>
-                <div class="small ${isOverCap(b)?'danger-text':''}">${fmtDur(b.durationMin)}${isOverCap(b)?` · cap ${RULE_CAPS[b.title]}m exceeded`:''}</div>
-                <div class="stack" style="margin-top:12px">
-                  <input data-duration-id="${b.id}" value="${fmtDur(b.durationMin)}">
-                  <select data-time-id="${b.id}">
-                    ${slots.map(s=>`<option value="${s.label}" ${s.label===b.startTime?"selected":""} ${day.blocks.some(x=>x.id!==b.id&&x.startTime===s.label)?"disabled":""}>${s.label}</option>`).join("")}
-                  </select>
-                </div>
-              </div>
-            `).join("")}
-          </div>
-
-          <div class="timeline-wrap">
+        <div class="timeline-layout"><div class="timeline-wrap">
             <div class="timeline-grid">
               <div class="time-col" style="height:${timeHeight}px">
                 ${slots.map((s,i)=>`<div class="time-label" style="top:${i*ROW_HEIGHT-7}px">${s.label.endsWith(":00")?s.label:""}</div>`).join("")}
@@ -285,9 +250,14 @@ function todayHTML(){
                   const top=((start-TIMELINE_START)/SLOT_MINUTES)*ROW_HEIGHT;
                   const h=Math.max((b.durationMin/SLOT_MINUTES)*ROW_HEIGHT-2,36);
                   return `<div class="event ${isOverCap(b)?'over':''}" style="top:${top}px;height:${h}px">
-                    <div class="event-title">${esc(b.title)}</div>
-                    <div class="event-time">${b.startTime} — ${b.endTime}</div>
-                    <div class="small ${isOverCap(b)?'danger-text':''}" style="margin-top:4px">${fmtDur(b.durationMin)}${isOverCap(b)?' · over cap':''}</div>
+                    <div style="display:flex;justify-content:space-between;gap:8px;align-items:flex-start">
+                      <div style="min-width:0">
+                        <div class="event-title">${esc(b.title)}</div>
+                        <div class="event-time">${b.startTime} — ${b.endTime}</div>
+                        <div class="small ${isOverCap(b)?'danger-text':''}" style="margin-top:4px">${fmtDur(b.durationMin)}${isOverCap(b)?' · over cap':''}</div>
+                      </div>
+                      <button class="btn danger" data-remove-grid="${b.id}" style="padding:4px 8px;min-height:auto;border-radius:999px;line-height:1">×</button>
+                    </div>
                   </div>`;
                 }).join("")}
               </div>
@@ -349,7 +319,7 @@ function renderContent(){
     document.getElementById("newBlockDuration").oninput=e=>{state.newBlock.duration=e.target.value; saveState();};
     document.getElementById("newBlockStartTime").onchange=e=>{state.newBlock.startTime=e.target.value; saveState();};
     document.getElementById("addBlockBtn").onclick=addBlock;
-    document.querySelectorAll("[data-remove]").forEach(b=>b.onclick=()=>removeBlock(Number(b.dataset.remove)));
+    document.querySelectorAll("[data-remove-grid]").forEach(b=>b.onclick=()=>removeBlock(Number(b.dataset.removeGrid)));
     document.querySelectorAll("[data-day]").forEach(b=>b.onclick=()=>{state.selectedDay=b.dataset.day; saveState(); render();});
     document.querySelectorAll("[data-duration-id]").forEach(i=>i.oninput=e=>updateBlockDuration(Number(i.dataset.durationId),e.target.value));
     document.querySelectorAll("[data-time-id]").forEach(s=>s.onchange=e=>updateBlockStartTime(Number(s.dataset.timeId),e.target.value));
