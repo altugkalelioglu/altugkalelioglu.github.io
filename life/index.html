@@ -5,33 +5,61 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Life Productivity Control Panel</title>
   <style>
-    :root{--bg:#020817;--panel:#0f172a;--border:#1f2937;--border2:#334155;--text:#e5eefc;--muted:#94a3b8;--muted2:#64748b;--indigo:99 102 241;--rose:244 63 94;--shadow:0 20px 40px rgba(0,0,0,.25)}
-    *{box-sizing:border-box} body{margin:0;font-family:Inter,system-ui,sans-serif;background:linear-gradient(180deg,#020617,#020817 35%,#020617);color:var(--text)}
-    .app{max-width:1440px;margin:0 auto;padding:18px}.topbar{display:flex;justify-content:space-between;gap:16px;align-items:flex-end;flex-wrap:wrap;margin-bottom:18px}
-    .eyebrow{font-size:12px;letter-spacing:.25em;text-transform:uppercase;color:var(--muted)} h1{font-size:clamp(28px,4vw,50px);margin:6px 0 0;line-height:1.02}
-    .subtitle{color:var(--muted);max-width:850px;margin-top:10px}.btn{border:1px solid var(--border2);background:var(--panel);color:var(--text);border-radius:16px;padding:10px 14px;cursor:pointer;font:inherit}
-    .btn:hover{border-color:#475569}.btn.primary{background:rgba(var(--indigo),.18);border-color:rgba(var(--indigo),.35);color:#c7d2fe}.btn.soft{background:#0b1220}.btn.danger{background:rgba(var(--rose),.12);border-color:rgba(var(--rose),.22);color:#fecdd3}
+    :root{
+      --bg:#020817;--panel:#0f172a;--panel2:#0b1220;--border:#1f2937;--border2:#334155;
+      --text:#e5eefc;--muted:#94a3b8;--muted2:#64748b;--indigo:99 102 241;--rose:244 63 94;
+      --shadow:0 20px 40px rgba(0,0,0,.25)
+    }
+    *{box-sizing:border-box}
+    body{margin:0;font-family:Inter,system-ui,sans-serif;background:linear-gradient(180deg,#020617,#020817 35%,#020617);color:var(--text)}
+    .app{max-width:1440px;margin:0 auto;padding:18px}
+    .topbar{display:flex;justify-content:space-between;gap:16px;align-items:flex-end;flex-wrap:wrap;margin-bottom:18px}
+    .eyebrow{font-size:12px;letter-spacing:.25em;text-transform:uppercase;color:var(--muted)}
+    h1{font-size:clamp(28px,4vw,50px);margin:6px 0 0;line-height:1.02}
+    .subtitle{color:var(--muted);max-width:900px;margin-top:10px}
+    .btn{border:1px solid var(--border2);background:var(--panel);color:var(--text);border-radius:16px;padding:10px 14px;cursor:pointer;font:inherit}
+    .btn:hover{border-color:#475569}.btn.primary{background:rgba(var(--indigo),.18);border-color:rgba(var(--indigo),.35);color:#c7d2fe}
+    .btn.soft{background:#0b1220}.btn.danger{background:rgba(var(--rose),.12);border-color:rgba(var(--rose),.22);color:#fecdd3}
     .tabs{display:flex;gap:10px;flex-wrap:wrap;margin:14px 0 18px}.tab.active{background:rgba(var(--indigo),.18);border-color:rgba(var(--indigo),.35);color:#c7d2fe}
     .collapsible{overflow:hidden;transition:max-height .25s ease,opacity .2s ease}.hidden-collapsed{max-height:0;opacity:0}.shown-collapsed{max-height:500px;opacity:1;margin-bottom:18px}
-    .card{background:rgba(15,23,42,.92);border:1px solid var(--border);border-radius:28px;box-shadow:var(--shadow);padding:18px}.rules-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px}
+    .card{background:rgba(15,23,42,.92);border:1px solid var(--border);border-radius:28px;box-shadow:var(--shadow);padding:18px}
+    .rules-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px}
     .rule-card,.mini-card{background:rgba(2,6,23,.55);border:1px solid var(--border);border-radius:18px;padding:12px 14px}
-    .grid-main{display:grid;grid-template-columns:360px 1fr;gap:18px}.left-col{position:sticky;top:18px;align-self:start}.section-title{display:flex;justify-content:space-between;gap:10px;align-items:center;margin-bottom:14px}.section-title h2{margin:0;font-size:20px}
-    .small{font-size:12px;color:var(--muted)} input,select{width:100%;background:#020617;border:1px solid var(--border2);color:var(--text);border-radius:14px;padding:10px 12px;font:inherit;outline:none}
-    .stack{display:grid;gap:12px}.placed-block{display:flex;justify-content:space-between;gap:10px;align-items:flex-start}.palette-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
-    .timeline-layout{display:grid;grid-template-columns:230px 1fr;gap:16px}.block-editor-list{display:grid;gap:10px}.block-editor-card{border:1px solid var(--border);background:#0b1220;border-radius:18px;padding:14px}
-    .timeline-wrap{border:1px solid var(--border);background:rgba(2,6,23,.35);border-radius:26px;padding:14px;overflow:auto}.timeline-grid{display:grid;grid-template-columns:56px 1fr;gap:14px;min-width:640px}
-    .time-col{position:relative}.time-label{position:absolute;left:0;right:0;font-size:11px;font-weight:600;color:var(--muted2)}.calendar{position:relative;border:1px solid var(--border);border-radius:22px;background:rgba(2,6,23,.25)}
+    .grid-main{display:grid;grid-template-columns:360px 1fr;gap:18px}
+    .left-col{position:sticky;top:18px;align-self:start}
+    .section-title{display:flex;justify-content:space-between;gap:10px;align-items:center;margin-bottom:14px}
+    .section-title h2{margin:0;font-size:20px}
+    .small{font-size:12px;color:var(--muted)}
+    input,select{width:100%;background:#020617;border:1px solid var(--border2);color:var(--text);border-radius:14px;padding:10px 12px;font:inherit;outline:none}
+    .stack{display:grid;gap:12px}.placed-block{display:flex;justify-content:space-between;gap:10px;align-items:flex-start}
+    .palette-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+    .timeline-layout{display:grid;grid-template-columns:230px 1fr;gap:16px}
+    .block-editor-list{display:grid;gap:10px}
+    .block-editor-card{border:1px solid var(--border);background:#0b1220;border-radius:18px;padding:14px}
+    .timeline-wrap{border:1px solid var(--border);background:rgba(2,6,23,.35);border-radius:26px;padding:14px;overflow:auto}
+    .timeline-grid{display:grid;grid-template-columns:56px 1fr;gap:14px;min-width:640px}
+    .time-col{position:relative}.time-label{position:absolute;left:0;right:0;font-size:11px;font-weight:600;color:var(--muted2)}
+    .calendar{position:relative;border:1px solid var(--border);border-radius:22px;background:rgba(2,6,23,.25)}
     .line{position:absolute;left:0;right:0;border-top:1px solid rgba(51,65,85,.65)} .line.hour{border-top-color:#334155}
-    .event{position:absolute;left:8px;right:8px;border-radius:18px;background:linear-gradient(180deg,rgba(99,102,241,.22),rgba(99,102,241,.12));border:1px solid rgba(129,140,248,.28);box-shadow:0 12px 24px rgba(30,41,59,.35);padding:10px 12px;overflow:hidden}
-    .event-title{font-size:14px;font-weight:700;line-height:1.1}.event-time{font-size:12px;color:#cbd5e1;margin-top:6px}.week-grid,.review-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:12px}
-    .week-card{background:rgba(2,6,23,.45);border:1px solid var(--border);border-radius:20px;padding:14px}.week-blocks{display:grid;gap:8px;margin-top:10px}.day-badge{display:inline-flex;padding:6px 10px;border-radius:999px;font-size:12px;border:1px solid rgba(var(--indigo),.35);background:rgba(var(--indigo),.18);color:#c7d2fe}
-    @media (max-width:1100px){.grid-main{grid-template-columns:1fr}.left-col{position:static}.timeline-layout{grid-template-columns:1fr}} @media (max-width:700px){.app{padding:12px}.palette-grid{grid-template-columns:1fr}.timeline-grid{min-width:520px}}
+    .event{position:absolute;left:8px;right:8px;border-radius:18px;background:linear-gradient(180deg,rgba(99,102,241,.22),rgba(99,102,241,.12));border:1px solid rgba(129,140,248,.28);box-shadow:0 12px 24px rgba(30,41,59,.35);padding:8px 12px;overflow:hidden;display:flex;flex-direction:column;justify-content:center}
+    .event.over,.mini-card.over,.block-editor-card.over,.placed-over{background:rgba(127,29,29,.22)!important;border-color:rgba(244,63,94,.45)!important}
+    .event-title{font-size:14px;font-weight:700;line-height:1.1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.event-time{font-size:12px;color:#cbd5e1;margin-top:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .week-grid,.review-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:12px}
+    .week-card{background:rgba(2,6,23,.45);border:1px solid var(--border);border-radius:20px;padding:14px}.week-blocks{display:grid;gap:8px;margin-top:10px}
+    .day-badge{display:inline-flex;padding:6px 10px;border-radius:999px;font-size:12px;border:1px solid rgba(var(--indigo),.35);background:rgba(var(--indigo),.18);color:#c7d2fe}
+    .danger-text{color:#fda4af}
+    @media (max-width:1100px){.grid-main{grid-template-columns:1fr}.left-col{position:static}.timeline-layout{grid-template-columns:1fr}}
+    @media (max-width:700px){.app{padding:12px}.palette-grid{grid-template-columns:1fr}.timeline-grid{min-width:520px}}
   </style>
 </head>
 <body>
 <div class="app">
   <div class="topbar">
-    <div><div class="eyebrow">Life Operating System</div><h1>Weekly Productivity Control Panel</h1><div class="subtitle">Place your own blocks into the day. No default anchors. No default limit bars until you actually log something.</div></div>
+    <div>
+      <div class="eyebrow">Life Operating System</div>
+      <h1>Weekly Productivity Control Panel</h1>
+      <div class="subtitle">Place your own blocks into the day. No default anchors. No default limit bars until you actually log something.</div>
+    </div>
     <button id="rulesToggle" class="btn soft">Rules</button>
   </div>
   <div id="rulesPanel" class="collapsible hidden-collapsed"></div>
@@ -41,33 +69,251 @@
 
 <script>
 const DAYS=["Mon","Tue","Wed","Thu","Fri","Sat","Sun"];
-const TIMELINE_START=6*60,TIMELINE_END=24*60,SLOT_MINUTES=15,ROW_HEIGHT=26;
-const state={rulesOpen:false,activeTab:"today",selectedDay:getTodayLabel(),newBlock:{title:"",duration:"",startTime:"09:00"},usage:{},rules:[["Wake-to-stand","Max 3 min"],["Morning phone","Messages + email only / 15 min"],["X / Twitter","Max 45 min"],["Shower","Max 10 min"],["Toilet","Target 5 min"],["Dating admin","Max 90 min"]],paletteItems:["Gym","Surf","Pilates","Rowing","Russian","Shower","Twitter","Dating admin","Toilet","Diction"],week:[]};
-function getTodayLabel(){const d=new Date().getDay();return DAYS[d===0?6:d-1]}
-function esc(s){return String(s).replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;").replaceAll('"',"&quot;").replaceAll("'","&#39;")}
-function parseTime(v){if(!v||!v.includes(":")) return null; const [h,m]=v.split(":").map(Number); return Number.isNaN(h)||Number.isNaN(m)?null:h*60+m}
-function fmtTime(t){const s=((t%1440)+1440)%1440,h=Math.floor(s/60),m=s%60; return `${String(h).padStart(2,"0")}:${String(m).padStart(2,"0")}`}
-function parseDur(v){if(!v) return 0; const n=parseInt(String(v).trim().toLowerCase().replace(/[^0-9]/g,""),10); return Number.isNaN(n)?0:n}
-function fmtDur(m){if(!m||m<=0) return "—"; if(m%60===0) return `${m/60}h`; if(m>60) return `${Math.floor(m/60)}h ${m%60}m`; return `${m}m`}
-function enrich(block){const startMin=parseTime(block.startTime),durationMin=parseDur(block.duration); return {...block,durationMin,startMin,endTime:startMin!==null&&durationMin>0?fmtTime(startMin+durationMin):"—"}}
-function createDay(day,blocks){return {day,blocks:blocks.map(enrich).sort((a,b)=>(a.startMin??0)-(b.startMin??0))}}
+const TIMELINE_START=6*60, TIMELINE_END=24*60, SLOT_MINUTES=15, ROW_HEIGHT=26;
+const RULE_CAPS={Shower:10,Twitter:45,"Dating admin":90,Toilet:5};
+
+const state={
+  rulesOpen:false,
+  activeTab:"today",
+  selectedDay:getTodayLabel(),
+  newBlock:{title:"",duration:"",startTime:"09:00"},
+  usage:{},
+  rules:[
+    ["Wake-to-stand","Max 3 min"],
+    ["Morning phone","Messages + email only / 15 min"],
+    ["X / Twitter","Max 45 min"],
+    ["Shower","Max 10 min"],
+    ["Toilet","Target 5 min"],
+    ["Dating admin","Max 90 min"]
+  ],
+  paletteItems:["Gym","Surf","Pilates","Rowing","Russian","Shower","Twitter","Dating admin","Toilet","Diction","Flight","Meal","Pre-flight prep","Book"],
+  week:[]
+};
+
+function getTodayLabel(){const d=new Date().getDay(); return DAYS[d===0?6:d-1];}
+function esc(s){return String(s).replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;").replaceAll('"',"&quot;").replaceAll("'","&#39;");}
+function parseTime(v){if(!v||!v.includes(":")) return null; const [h,m]=v.split(":").map(Number); return Number.isNaN(h)||Number.isNaN(m)?null:h*60+m;}
+function fmtTime(t){const s=((t%1440)+1440)%1440,h=Math.floor(s/60),m=s%60; return `${String(h).padStart(2,"0")}:${String(m).padStart(2,"0")}`;}
+function parseDur(v){if(!v) return 0; const n=parseInt(String(v).trim().toLowerCase().replace(/[^0-9]/g,""),10); return Number.isNaN(n)?0:n;}
+function fmtDur(m){if(!m||m<=0) return "—"; if(m%60===0) return `${m/60}h`; if(m>60) return `${Math.floor(m/60)}h ${m%60}m`; return `${m}m`;}
+function enrich(block){const startMin=parseTime(block.startTime),durationMin=parseDur(block.duration); return {...block,durationMin,startMin,endTime:startMin!==null&&durationMin>0?fmtTime(startMin+durationMin):"—"};}
+function createDay(day,blocks){return {day,blocks:blocks.map(enrich).sort((a,b)=>(a.startMin??0)-(b.startMin??0))};}
 const slots=[]; for(let t=TIMELINE_START;t<=TIMELINE_END;t+=SLOT_MINUTES) slots.push({label:fmtTime(t),minutes:t});
-state.week=[createDay("Mon",[]),createDay("Tue",[{id:1,title:"Gym",startTime:"09:00",duration:"75m"},{id:2,title:"Russian",startTime:"11:30",duration:"30m"}]),createDay("Wed",[]),createDay("Thu",[]),createDay("Fri",[]),createDay("Sat",[]),createDay("Sun",[])];
-function selectedDayData(){return state.week.find(d=>d.day===state.selectedDay)||state.week[0]}
-function reviewItems(){const all=state.week.flatMap(d=>d.blocks); const count=n=>all.filter(b=>b.title.toLowerCase()===n.toLowerCase()).length; const gymTarget=5; return [["Gym completed",`${count("Gym")} / ${gymTarget} planned`],["Russian sessions",String(count("Russian"))],["Twitter blocks",String(count("Twitter"))],["Dating admin blocks",String(count("Dating admin"))],["Shower blocks",String(count("Shower"))],["Toilet blocks",String(count("Toilet"))]]}
-function addBlock(){const day=selectedDayData(); if(!state.newBlock.title.trim()||!state.newBlock.duration.trim()) return; if(day.blocks.some(b=>b.startTime===state.newBlock.startTime)) return; state.week=state.week.map(d=>d.day!==state.selectedDay?d:{...d,blocks:[...d.blocks,enrich({id:Date.now(),title:state.newBlock.title,startTime:state.newBlock.startTime,duration:state.newBlock.duration})].sort((a,b)=>(a.startMin??0)-(b.startMin??0))}); state.newBlock={...state.newBlock,title:"",duration:""}; render()}
-function removeBlock(id){state.week=state.week.map(d=>d.day===state.selectedDay?{...d,blocks:d.blocks.filter(b=>b.id!==id)}:d); render()}
-function updateBlockDuration(id,value){state.week=state.week.map(d=>d.day!==state.selectedDay?d:{...d,blocks:d.blocks.map(b=>b.id===id?enrich({...b,duration:value}):b).sort((a,b)=>(a.startMin??0)-(b.startMin??0))}); render()}
-function updateBlockStartTime(id,value){const day=selectedDayData(); if(day.blocks.some(b=>b.id!==id&&b.startTime===value)) return; state.week=state.week.map(d=>d.day!==state.selectedDay?d:{...d,blocks:d.blocks.map(b=>b.id===id?enrich({...b,startTime:value}):b).sort((a,b)=>(a.startMin??0)-(b.startMin??0))}); render()}
-function slotTaken(label){return selectedDayData().blocks.some(b=>b.startTime===label)}
-function renderRules(){const p=document.getElementById("rulesPanel"); p.className=`collapsible ${state.rulesOpen?"shown-collapsed":"hidden-collapsed"}`; p.innerHTML=`<section class="card"><div class="section-title"><h2>Rules</h2><div class="small">Persistent</div></div><div class="rules-grid">${state.rules.map(([n,v])=>`<div class="rule-card"><div class="small">${n}</div><div style="margin-top:6px;font-weight:600">${v}</div></div>`).join("")}</div></section>`}
-function renderTabs(){const el=document.getElementById("tabs"); el.innerHTML=["today","week","review"].map(t=>`<button class="btn tab ${state.activeTab===t?"active":""}" data-tab="${t}">${t==="today"?"Today":t==="week"?"This Week":"Review"}</button>`).join(""); el.querySelectorAll("[data-tab]").forEach(b=>b.onclick=()=>{state.activeTab=b.dataset.tab; render()})}
-function todayHTML(){const day=selectedDayData(),timeHeight=slots.length*ROW_HEIGHT; return `<div class="grid-main"><section class="left-col"><div class="card stack"><div class="section-title"><div><h2>Today</h2><div class="small" style="margin-top:6px">Auto-selected from current day</div></div><span class="day-badge">${day.day}</span></div><div class="mini-card"><div class="small" style="margin-bottom:10px">Block palette</div><div class="palette-grid">${state.paletteItems.map(item=>`<button class="btn soft" data-palette="${esc(item)}" style="text-align:left"><div style="font-weight:600">${esc(item)}</div></button>`).join("")}</div><div class="stack" style="margin-top:12px"><input id="newBlockTitle" placeholder="Block name" value="${esc(state.newBlock.title)}"><input id="newBlockDuration" placeholder="Write your own duration" value="${esc(state.newBlock.duration)}"><select id="newBlockStartTime">${slots.map(slot=>`<option value="${slot.label}" ${state.newBlock.startTime===slot.label?"selected":""} ${slotTaken(slot.label)?"disabled":""}>${slot.label}${slotTaken(slot.label)?" · occupied":""}</option>`).join("")}</select><button id="addBlockBtn" class="btn primary">Add block</button></div></div><div class="mini-card"><div class="small" style="margin-bottom:10px">Placed blocks</div><div class="stack">${day.blocks.length===0?`<div class="small">No blocks yet.</div>`:day.blocks.map(b=>`<div class="placed-block"><div><div style="font-weight:600">${esc(b.title)}</div><div class="small" style="margin-top:6px">${b.startTime} → ${b.endTime}</div><div class="small">${fmtDur(b.durationMin)}</div></div><button class="btn danger" data-remove="${b.id}" style="padding:6px 10px">×</button></div>`).join("")}</div></div><div class="mini-card"><div class="small" style="margin-bottom:10px">Logged limits</div>${Object.keys(state.usage).length===0?`<div class="small">Nothing logged yet.</div>`:Object.entries(state.usage).map(([k,v])=>`<div class="placed-block"><span>${esc(k)}</span><strong>${esc(v)}</strong></div>`).join("")}</div></div></section><section class="stack"><div class="card"><div class="section-title"><div><h2>Day editor</h2><div class="small" style="margin-top:6px">One block per time slot. No anchor field. No separate time-map settings panel.</div></div><div style="display:flex;gap:8px;flex-wrap:wrap">${state.week.map(d=>`<button class="btn ${state.selectedDay===d.day?"primary":"soft"}" data-day="${d.day}">${d.day}</button>`).join("")}</div></div><div class="timeline-layout"><div class="block-editor-list">${day.blocks.map(b=>`<div class="block-editor-card"><div style="font-weight:700">${esc(b.title)}</div><div class="small" style="margin-top:6px">${b.startTime} → ${b.endTime}</div><div class="small">${fmtDur(b.durationMin)}</div><div class="stack" style="margin-top:12px"><input data-duration-id="${b.id}" value="${fmtDur(b.durationMin)}"><select data-time-id="${b.id}">${slots.map(s=>`<option value="${s.label}" ${s.label===b.startTime?"selected":""} ${day.blocks.some(x=>x.id!==b.id&&x.startTime===s.label)?"disabled":""}>${s.label}</option>`).join("")}</select></div></div>`).join("")}</div><div class="timeline-wrap"><div class="timeline-grid"><div class="time-col" style="height:${timeHeight}px">${slots.map((s,i)=>`<div class="time-label" style="top:${i*ROW_HEIGHT-7}px">${s.label.endsWith(":00")?s.label:""}</div>`).join("")}</div><div class="calendar" style="height:${timeHeight}px">${slots.map((s,i)=>`<div class="line ${s.label.endsWith(":00")?"hour":""}" style="top:${i*ROW_HEIGHT}px;height:${ROW_HEIGHT}px"></div>`).join("")}${day.blocks.map(b=>{const start=parseTime(b.startTime); if(start===null) return ""; const top=((start-TIMELINE_START)/SLOT_MINUTES)*ROW_HEIGHT; const h=Math.max((b.durationMin/SLOT_MINUTES)*ROW_HEIGHT-2,ROW_HEIGHT-2); return `<div class="event" style="top:${top}px;height:${h}px"><div class="event-title">${esc(b.title)}</div><div class="event-time">${b.startTime} — ${b.endTime}</div><div class="small" style="margin-top:4px">${fmtDur(b.durationMin)}</div></div>`}).join("")}</div></div></div></div></section></div>`}
-function weekHTML(){return `<section class="card"><div class="section-title"><div><h2>This Week</h2><div class="small" style="margin-top:6px">You place only your own blocks here. No default anchors. No default limit bars.</div></div></div><div class="week-grid">${state.week.map(d=>`<div class="week-card"><div style="font-size:20px;font-weight:700;margin-bottom:10px">${d.day}</div><div class="week-blocks">${d.blocks.length===0?`<div class="small">No blocks yet.</div>`:d.blocks.map(b=>`<div class="mini-card"><div style="font-weight:600">${esc(b.title)}</div><div class="small" style="margin-top:4px">${b.startTime} → ${b.endTime} · ${fmtDur(b.durationMin)}</div></div>`).join("")}</div><button class="btn primary" style="width:100%;margin-top:12px" data-edit-day="${d.day}">Edit ${d.day}</button></div>`).join("")}</div></section>`}
-function reviewHTML(){const items=reviewItems(); return `<section class="card"><div class="section-title"><h2>Weekly Review</h2><div class="small">Based on your entered blocks</div></div><div class="review-grid">${items.map(([l,v])=>`<div class="mini-card placed-block"><span class="small">${l}</span><strong>${v}</strong></div>`).join("")}</div></section>`}
-function renderContent(){const el=document.getElementById("appContent"); el.innerHTML=state.activeTab==="today"?todayHTML():state.activeTab==="week"?weekHTML():reviewHTML(); if(state.activeTab==="today"){document.querySelectorAll("[data-palette]").forEach(b=>b.onclick=()=>{state.newBlock.title=b.dataset.palette; render()}); document.getElementById("newBlockTitle").oninput=e=>state.newBlock.title=e.target.value; document.getElementById("newBlockDuration").oninput=e=>state.newBlock.duration=e.target.value; document.getElementById("newBlockStartTime").onchange=e=>state.newBlock.startTime=e.target.value; document.getElementById("addBlockBtn").onclick=addBlock; document.querySelectorAll("[data-remove]").forEach(b=>b.onclick=()=>removeBlock(Number(b.dataset.remove))); document.querySelectorAll("[data-day]").forEach(b=>b.onclick=()=>{state.selectedDay=b.dataset.day; render()}); document.querySelectorAll("[data-duration-id]").forEach(i=>i.oninput=e=>updateBlockDuration(Number(i.dataset.durationId),e.target.value)); document.querySelectorAll("[data-time-id]").forEach(s=>s.onchange=e=>updateBlockStartTime(Number(s.dataset.timeId),e.target.value))} if(state.activeTab==="week"){document.querySelectorAll("[data-edit-day]").forEach(b=>b.onclick=()=>{state.selectedDay=b.dataset.editDay; state.activeTab="today"; render()})}}
-function render(){renderRules(); renderTabs(); renderContent()}
-document.getElementById("rulesToggle").onclick=()=>{state.rulesOpen=!state.rulesOpen; render()}; render();
+
+state.week=[
+  createDay("Mon",[]),
+  createDay("Tue",[]),
+  createDay("Wed",[]),
+  createDay("Thu",[]),
+  createDay("Fri",[]),
+  createDay("Sat",[]),
+  createDay("Sun",[])
+];
+
+function selectedDayData(){return state.week.find(d=>d.day===state.selectedDay)||state.week[0];}
+function isOverCap(block){return Object.prototype.hasOwnProperty.call(RULE_CAPS, block.title) && block.durationMin>RULE_CAPS[block.title];}
+
+function reviewItems(){
+  const all=state.week.flatMap(d=>d.blocks);
+  const count=n=>all.filter(b=>b.title.toLowerCase()===n.toLowerCase()).length;
+  const exceedCount=n=>all.filter(b=>b.title.toLowerCase()===n.toLowerCase() && isOverCap(b)).length;
+  const gymTarget=5, dictionTarget=5, bookTarget=3;
+  return [
+    ["Gym completed",`${count("Gym")} / ${gymTarget} planned`],
+    ["Diction completed",`${count("Diction")} / ${dictionTarget} planned`],
+    ["Book completed",`${count("Book")} / ${bookTarget} planned`],
+    ["Russian sessions",String(count("Russian"))],
+    ["Twitter cap exceeded",String(exceedCount("Twitter"))],
+    ["Dating admin cap exceeded",String(exceedCount("Dating admin"))],
+    ["Shower cap exceeded",String(exceedCount("Shower"))],
+    ["Toilet cap exceeded",String(exceedCount("Toilet"))]
+  ];
+}
+
+function addBlock(){
+  const day=selectedDayData();
+  if(!state.newBlock.title.trim() || !state.newBlock.duration.trim()) return;
+  if(day.blocks.some(b=>b.startTime===state.newBlock.startTime)) return;
+  state.week=state.week.map(d=>d.day!==state.selectedDay?d:{...d,blocks:[...d.blocks,enrich({id:Date.now(),title:state.newBlock.title,startTime:state.newBlock.startTime,duration:state.newBlock.duration})].sort((a,b)=>(a.startMin??0)-(b.startMin??0))});
+  state.newBlock={...state.newBlock,title:"",duration:""};
+  render();
+}
+function removeBlock(id){state.week=state.week.map(d=>d.day===state.selectedDay?{...d,blocks:d.blocks.filter(b=>b.id!==id)}:d); render();}
+function updateBlockDuration(id,value){state.week=state.week.map(d=>d.day!==state.selectedDay?d:{...d,blocks:d.blocks.map(b=>b.id===id?enrich({...b,duration:value}):b).sort((a,b)=>(a.startMin??0)-(b.startMin??0))}); render();}
+function updateBlockStartTime(id,value){
+  const day=selectedDayData();
+  if(day.blocks.some(b=>b.id!==id&&b.startTime===value)) return;
+  state.week=state.week.map(d=>d.day!==state.selectedDay?d:{...d,blocks:d.blocks.map(b=>b.id===id?enrich({...b,startTime:value}):b).sort((a,b)=>(a.startMin??0)-(b.startMin??0))});
+  render();
+}
+function slotTaken(label){return selectedDayData().blocks.some(b=>b.startTime===label);}
+
+function renderRules(){
+  const p=document.getElementById("rulesPanel");
+  p.className=`collapsible ${state.rulesOpen?"shown-collapsed":"hidden-collapsed"}`;
+  p.innerHTML=`<section class="card"><div class="section-title"><h2>Rules</h2><div class="small">Persistent</div></div><div class="rules-grid">${state.rules.map(([n,v])=>`<div class="rule-card"><div class="small">${n}</div><div style="margin-top:6px;font-weight:600">${v}</div></div>`).join("")}</div></section>`;
+}
+function renderTabs(){
+  const el=document.getElementById("tabs");
+  el.innerHTML=["today","week","review"].map(t=>`<button class="btn tab ${state.activeTab===t?"active":""}" data-tab="${t}">${t==="today"?"Today":t==="week"?"This Week":"Review"}</button>`).join("");
+  el.querySelectorAll("[data-tab]").forEach(b=>b.onclick=()=>{state.activeTab=b.dataset.tab; render();});
+}
+
+function todayHTML(){
+  const day=selectedDayData(), timeHeight=slots.length*ROW_HEIGHT;
+  return `<div class="grid-main">
+    <section class="left-col">
+      <div class="card stack">
+        <div class="section-title">
+          <div><h2>Today</h2><div class="small" style="margin-top:6px">Auto-selected from current day</div></div>
+          <span class="day-badge">${day.day}</span>
+        </div>
+
+        <div class="mini-card">
+          <div class="small" style="margin-bottom:10px">Block palette</div>
+          <div class="palette-grid">
+            ${state.paletteItems.map(item=>`<button class="btn soft" data-palette="${esc(item)}" style="text-align:left"><div style="font-weight:600">${esc(item)}</div></button>`).join("")}
+          </div>
+          <div class="stack" style="margin-top:12px">
+            <input id="newBlockTitle" placeholder="Block name" value="${esc(state.newBlock.title)}">
+            <input id="newBlockDuration" placeholder="Write your own duration" value="${esc(state.newBlock.duration)}">
+            <select id="newBlockStartTime">
+              ${slots.map(slot=>`<option value="${slot.label}" ${state.newBlock.startTime===slot.label?"selected":""} ${slotTaken(slot.label)?"disabled":""}>${slot.label}${slotTaken(slot.label)?" · occupied":""}</option>`).join("")}
+            </select>
+            <button id="addBlockBtn" class="btn primary">Add block</button>
+          </div>
+        </div>
+
+        <div class="mini-card">
+          <div class="small" style="margin-bottom:10px">Placed blocks</div>
+          <div class="stack">
+            ${day.blocks.length===0?`<div class="small">No blocks yet.</div>`:day.blocks.map(b=>`
+              <div class="placed-block ${isOverCap(b)?'placed-over':''}">
+                <div>
+                  <div style="font-weight:600">${esc(b.title)}</div>
+                  <div class="small" style="margin-top:6px">${b.startTime} → ${b.endTime}</div>
+                  <div class="small ${isOverCap(b)?'danger-text':''}">${fmtDur(b.durationMin)}${isOverCap(b)?` · over by ${b.durationMin-RULE_CAPS[b.title]}m`:''}</div>
+                </div>
+                <button class="btn danger" data-remove="${b.id}" style="padding:6px 10px">×</button>
+              </div>
+            `).join("")}
+          </div>
+        </div>
+
+        <div class="mini-card">
+          <div class="small" style="margin-bottom:10px">Logged limits</div>
+          ${Object.keys(state.usage).length===0?`<div class="small">Nothing logged yet.</div>`:Object.entries(state.usage).map(([k,v])=>`<div class="placed-block"><span>${esc(k)}</span><strong>${esc(v)}</strong></div>`).join("")}
+        </div>
+      </div>
+    </section>
+
+    <section class="stack">
+      <div class="card">
+        <div class="section-title">
+          <div><h2>Day editor</h2><div class="small" style="margin-top:6px">One block per time slot. No anchor field. No separate time-map settings panel.</div></div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap">${state.week.map(d=>`<button class="btn ${state.selectedDay===d.day?"primary":"soft"}" data-day="${d.day}">${d.day}</button>`).join("")}</div>
+        </div>
+
+        <div class="timeline-layout">
+          <div class="block-editor-list">
+            ${day.blocks.map(b=>`
+              <div class="block-editor-card ${isOverCap(b)?'over':''}">
+                <div style="font-weight:700">${esc(b.title)}</div>
+                <div class="small" style="margin-top:6px">${b.startTime} → ${b.endTime}</div>
+                <div class="small ${isOverCap(b)?'danger-text':''}">${fmtDur(b.durationMin)}${isOverCap(b)?` · cap ${RULE_CAPS[b.title]}m exceeded`:''}</div>
+                <div class="stack" style="margin-top:12px">
+                  <input data-duration-id="${b.id}" value="${fmtDur(b.durationMin)}">
+                  <select data-time-id="${b.id}">
+                    ${slots.map(s=>`<option value="${s.label}" ${s.label===b.startTime?"selected":""} ${day.blocks.some(x=>x.id!==b.id&&x.startTime===s.label)?"disabled":""}>${s.label}</option>`).join("")}
+                  </select>
+                </div>
+              </div>
+            `).join("")}
+          </div>
+
+          <div class="timeline-wrap">
+            <div class="timeline-grid">
+              <div class="time-col" style="height:${timeHeight}px">
+                ${slots.map((s,i)=>`<div class="time-label" style="top:${i*ROW_HEIGHT-7}px">${s.label.endsWith(":00")?s.label:""}</div>`).join("")}
+              </div>
+              <div class="calendar" style="height:${timeHeight}px">
+                ${slots.map((s,i)=>`<div class="line ${s.label.endsWith(":00")?"hour":""}" style="top:${i*ROW_HEIGHT}px;height:${ROW_HEIGHT}px"></div>`).join("")}
+                ${day.blocks.map(b=>{
+                  const start=parseTime(b.startTime); if(start===null) return "";
+                  const top=((start-TIMELINE_START)/SLOT_MINUTES)*ROW_HEIGHT;
+                  const h=Math.max((b.durationMin/SLOT_MINUTES)*ROW_HEIGHT-2,36);
+                  return `<div class="event ${isOverCap(b)?'over':''}" style="top:${top}px;height:${h}px">
+                    <div class="event-title">${esc(b.title)}</div>
+                    <div class="event-time">${b.startTime} — ${b.endTime}</div>
+                    <div class="small ${isOverCap(b)?'danger-text':''}" style="margin-top:4px">${fmtDur(b.durationMin)}${isOverCap(b)?' · over cap':''}</div>
+                  </div>`;
+                }).join("")}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </div>`;
+}
+
+function weekHTML(){
+  return `<section class="card">
+    <div class="section-title">
+      <div><h2>This Week</h2><div class="small" style="margin-top:6px">You place only your own blocks here. No default anchors. No default limit bars.</div></div>
+    </div>
+    <div class="week-grid">
+      ${state.week.map(d=>`
+        <div class="week-card">
+          <div style="font-size:20px;font-weight:700;margin-bottom:10px">${d.day}</div>
+          <div class="week-blocks">
+            ${d.blocks.length===0?`<div class="small">No blocks yet.</div>`:d.blocks.map(b=>`
+              <div class="mini-card ${isOverCap(b)?'over':''}">
+                <div style="font-weight:600">${esc(b.title)}</div>
+                <div class="small ${isOverCap(b)?'danger-text':''}" style="margin-top:4px">${b.startTime} → ${b.endTime} · ${fmtDur(b.durationMin)}${isOverCap(b)?' · over cap':''}</div>
+              </div>
+            `).join("")}
+          </div>
+          <button class="btn primary" style="width:100%;margin-top:12px" data-edit-day="${d.day}">Edit ${d.day}</button>
+        </div>
+      `).join("")}
+    </div>
+  </section>`;
+}
+
+function reviewHTML(){
+  const items=reviewItems();
+  return `<section class="card">
+    <div class="section-title"><h2>Weekly Review</h2><div class="small">Based on your entered blocks</div></div>
+    <div class="review-grid">
+      ${items.map(([l,v])=>`<div class="mini-card placed-block"><span class="small">${l}</span><strong>${v}</strong></div>`).join("")}
+    </div>
+  </section>`;
+}
+
+function renderContent(){
+  const el=document.getElementById("appContent");
+  el.innerHTML=state.activeTab==="today"?todayHTML():state.activeTab==="week"?weekHTML():reviewHTML();
+
+  if(state.activeTab==="today"){
+    document.querySelectorAll("[data-palette]").forEach(b=>b.onclick=()=>{state.newBlock.title=b.dataset.palette; render();});
+    document.getElementById("newBlockTitle").oninput=e=>state.newBlock.title=e.target.value;
+    document.getElementById("newBlockDuration").oninput=e=>state.newBlock.duration=e.target.value;
+    document.getElementById("newBlockStartTime").onchange=e=>state.newBlock.startTime=e.target.value;
+    document.getElementById("addBlockBtn").onclick=addBlock;
+    document.querySelectorAll("[data-remove]").forEach(b=>b.onclick=()=>removeBlock(Number(b.dataset.remove)));
+    document.querySelectorAll("[data-day]").forEach(b=>b.onclick=()=>{state.selectedDay=b.dataset.day; render();});
+    document.querySelectorAll("[data-duration-id]").forEach(i=>i.oninput=e=>updateBlockDuration(Number(i.dataset.durationId),e.target.value));
+    document.querySelectorAll("[data-time-id]").forEach(s=>s.onchange=e=>updateBlockStartTime(Number(s.dataset.timeId),e.target.value));
+  }
+  if(state.activeTab==="week"){
+    document.querySelectorAll("[data-edit-day]").forEach(b=>b.onclick=()=>{state.selectedDay=b.dataset.editDay; state.activeTab="today"; render();});
+  }
+}
+
+function render(){renderRules(); renderTabs(); renderContent();}
+document.getElementById("rulesToggle").onclick=()=>{state.rulesOpen=!state.rulesOpen; render();};
+render();
 </script>
 </body>
 </html>
