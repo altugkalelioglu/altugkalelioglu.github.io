@@ -117,12 +117,12 @@ function reviewItems(){
   const all=state.week.flatMap(d=>d.blocks);
   const count=n=>all.filter(b=>b.title.toLowerCase()===n.toLowerCase()).length;
   const exceedCount=n=>all.filter(b=>b.title.toLowerCase()===n.toLowerCase() && isOverCap(b)).length;
-  const gymTarget=5, dictionTarget=5, bookTarget=3;
+  const gymTarget=5, russianTarget=5, dictionTarget=5, bookTarget=3;
   return [
     ["Gym completed",`${count("Gym")} / ${gymTarget} planned`],
     ["Diction completed",`${count("Diction")} / ${dictionTarget} planned`],
     ["Book completed",`${count("Book")} / ${bookTarget} planned`],
-    ["Russian sessions",String(count("Russian"))],
+    ["Russian completed",`${count("Russian")} / ${russianTarget} planned`],
     ["Twitter cap exceeded",String(exceedCount("Twitter"))],
     ["Dating admin cap exceeded",String(exceedCount("Dating admin"))],
     ["Shower cap exceeded",String(exceedCount("Shower"))],
@@ -283,10 +283,16 @@ function weekHTML(){
 
 function reviewHTML(){
   const items=reviewItems();
+  const mainItems=items.filter(([label])=>!label.toLowerCase().includes("exceeded"));
+  const exceedItems=items.filter(([label])=>label.toLowerCase().includes("exceeded"));
   return `<section class="card">
     <div class="section-title"><h2>Weekly Review</h2><div class="small">Based on your entered blocks</div></div>
     <div class="review-grid">
-      ${items.map(([l,v])=>`<div class="mini-card placed-block"><span class="small">${l}</span><strong>${v}</strong></div>`).join("")}
+      ${mainItems.map(([l,v])=>`<div class="mini-card placed-block"><span class="small">${l}</span><strong>${v}</strong></div>`).join("")}
+    </div>
+    <div class="small" style="margin-top:16px;margin-bottom:10px">Limit exceed counts</div>
+    <div class="review-grid">
+      ${exceedItems.map(([l,v])=>`<div class="mini-card placed-block"><span class="small">${l}</span><strong>${v}</strong></div>`).join("")}
     </div>
   </section>`;
 }
