@@ -69,6 +69,7 @@
 
 <script>
 const DAYS=["Mon","Tue","Wed","Thu","Fri","Sat","Sun"];
+const STORAGE_KEY="life_productivity_app_v9";
 const TIMELINE_START=6*60, TIMELINE_END=24*60, SLOT_MINUTES=15, ROW_HEIGHT=26;
 const RULE_CAPS={Shower:10,Twitter:45,"Dating admin":90,Toilet:5};
 
@@ -98,9 +99,7 @@ function parseDur(v){if(!v) return 0; const n=parseInt(String(v).trim().toLowerC
 function fmtDur(m){if(!m||m<=0) return "—"; if(m%60===0) return `${m/60}h`; if(m>60) return `${Math.floor(m/60)}h ${m%60}m`; return `${m}m`;}
 function enrich(block){const startMin=parseTime(block.startTime),durationMin=parseDur(block.duration); return {...block,durationMin,startMin,endTime:startMin!==null&&durationMin>0?fmtTime(startMin+durationMin):"—"};}
 function createDay(day,blocks){return {day,blocks:blocks.map(enrich).sort((a,b)=>(a.startMin??0)-(b.startMin??0))};}
-const slots=[]; for(let t=TIMELINE_START;t<=TIMELINE_END;t+=SLOT_MINUTES) slots.push({label:fmtTime(t),minutes:t});
-
-state.week=[
+function defaultWeek(){return [
   createDay("Mon",[]),
   createDay("Tue",[]),
   createDay("Wed",[]),
@@ -108,7 +107,48 @@ state.week=[
   createDay("Fri",[]),
   createDay("Sat",[]),
   createDay("Sun",[])
-];
+];}
+function saveState(){
+  const payload={
+    selectedDay: state.selectedDay,
+    activeTab: state.activeTab,
+    newBlock: state.newBlock,
+    usage: state.usage,
+    week: state.week.map(day=>({
+      day: day.day,
+      blocks: day.blocks.map(block=>({
+        id:block.id,
+        title:block.title,
+        startTime:block.startTime,
+        duration: fmtDur(block.durationMin || parseDur(block.duration))
+      }))
+    }))
+  };
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(payload));
+}
+function loadState(){
+  try{
+    const raw=localStorage.getItem(STORAGE_KEY);
+    if(!raw) return false;
+    const parsed=JSON.parse(raw);
+    if(parsed.week && Array.isArray(parsed.week)){
+      state.week=parsed.week.map(day=>createDay(day.day, Array.isArray(day.blocks)?day.blocks:[]));
+    } else {
+      state.week=defaultWeek();
+    }
+    if(parsed.selectedDay) state.selectedDay=parsed.selectedDay;
+    if(parsed.activeTab) state.activeTab=parsed.activeTab;
+    if(parsed.newBlock) state.newBlock=parsed.newBlock;
+    if(parsed.usage) state.usage=parsed.usage;
+    return true;
+  }catch(e){
+    return false;
+  }
+}
+const slots=[]; for(let t=TIMELINE_START;t<=TIMELINE_END;t+=SLOT_MINUTES) slots.push({label:fmtTime(t),minutes:t});
+
+state.week=defaultWeek();
+loadState();
 
 function selectedDayData(){return state.week.find(d=>d.day===state.selectedDay)||state.week[0];}
 function isOverCap(block){return Object.prototype.hasOwnProperty.call(RULE_CAPS, block.title) && block.durationMin>RULE_CAPS[block.title];}
@@ -136,14 +176,16 @@ function addBlock(){
   if(day.blocks.some(b=>b.startTime===state.newBlock.startTime)) return;
   state.week=state.week.map(d=>d.day!==state.selectedDay?d:{...d,blocks:[...d.blocks,enrich({id:Date.now(),title:state.newBlock.title,startTime:state.newBlock.startTime,duration:state.newBlock.duration})].sort((a,b)=>(a.startMin??0)-(b.startMin??0))});
   state.newBlock={...state.newBlock,title:"",duration:""};
+  saveState();
   render();
 }
-function removeBlock(id){state.week=state.week.map(d=>d.day===state.selectedDay?{...d,blocks:d.blocks.filter(b=>b.id!==id)}:d); render();}
-function updateBlockDuration(id,value){state.week=state.week.map(d=>d.day!==state.selectedDay?d:{...d,blocks:d.blocks.map(b=>b.id===id?enrich({...b,duration:value}):b).sort((a,b)=>(a.startMin??0)-(b.startMin??0))}); render();}
+function removeBlock(id){state.week=state.week.map(d=>d.day===state.selectedDay?{...d,blocks:d.blocks.filter(b=>b.id!==id)}:d); saveState(); render();}
+function updateBlockDuration(id,value){state.week=state.week.map(d=>d.day!==state.selectedDay?d:{...d,blocks:d.blocks.map(b=>b.id===id?enrich({...b,duration:value}):b).sort((a,b)=>(a.startMin??0)-(b.startMin??0))}); saveState(); render();}
 function updateBlockStartTime(id,value){
   const day=selectedDayData();
   if(day.blocks.some(b=>b.id!==id&&b.startTime===value)) return;
   state.week=state.week.map(d=>d.day!==state.selectedDay?d:{...d,blocks:d.blocks.map(b=>b.id===id?enrich({...b,startTime:value}):b).sort((a,b)=>(a.startMin??0)-(b.startMin??0))});
+  saveState();
   render();
 }
 function slotTaken(label){return selectedDayData().blocks.some(b=>b.startTime===label);}
@@ -156,7 +198,7 @@ function renderRules(){
 function renderTabs(){
   const el=document.getElementById("tabs");
   el.innerHTML=["today","week","review"].map(t=>`<button class="btn tab ${state.activeTab===t?"active":""}" data-tab="${t}">${t==="today"?"Today":t==="week"?"This Week":"Review"}</button>`).join("");
-  el.querySelectorAll("[data-tab]").forEach(b=>b.onclick=()=>{state.activeTab=b.dataset.tab; render();});
+  el.querySelectorAll("[data-tab]").forEach(b=>b.onclick=()=>{state.activeTab=b.dataset.tab; saveState(); render();});
 }
 
 function todayHTML(){
@@ -302,23 +344,23 @@ function renderContent(){
   el.innerHTML=state.activeTab==="today"?todayHTML():state.activeTab==="week"?weekHTML():reviewHTML();
 
   if(state.activeTab==="today"){
-    document.querySelectorAll("[data-palette]").forEach(b=>b.onclick=()=>{state.newBlock.title=b.dataset.palette; render();});
-    document.getElementById("newBlockTitle").oninput=e=>state.newBlock.title=e.target.value;
-    document.getElementById("newBlockDuration").oninput=e=>state.newBlock.duration=e.target.value;
-    document.getElementById("newBlockStartTime").onchange=e=>state.newBlock.startTime=e.target.value;
+    document.querySelectorAll("[data-palette]").forEach(b=>b.onclick=()=>{state.newBlock.title=b.dataset.palette; saveState(); render();});
+    document.getElementById("newBlockTitle").oninput=e=>{state.newBlock.title=e.target.value; saveState();};
+    document.getElementById("newBlockDuration").oninput=e=>{state.newBlock.duration=e.target.value; saveState();};
+    document.getElementById("newBlockStartTime").onchange=e=>{state.newBlock.startTime=e.target.value; saveState();};
     document.getElementById("addBlockBtn").onclick=addBlock;
     document.querySelectorAll("[data-remove]").forEach(b=>b.onclick=()=>removeBlock(Number(b.dataset.remove)));
-    document.querySelectorAll("[data-day]").forEach(b=>b.onclick=()=>{state.selectedDay=b.dataset.day; render();});
+    document.querySelectorAll("[data-day]").forEach(b=>b.onclick=()=>{state.selectedDay=b.dataset.day; saveState(); render();});
     document.querySelectorAll("[data-duration-id]").forEach(i=>i.oninput=e=>updateBlockDuration(Number(i.dataset.durationId),e.target.value));
     document.querySelectorAll("[data-time-id]").forEach(s=>s.onchange=e=>updateBlockStartTime(Number(s.dataset.timeId),e.target.value));
   }
   if(state.activeTab==="week"){
-    document.querySelectorAll("[data-edit-day]").forEach(b=>b.onclick=()=>{state.selectedDay=b.dataset.editDay; state.activeTab="today"; render();});
+    document.querySelectorAll("[data-edit-day]").forEach(b=>b.onclick=()=>{state.selectedDay=b.dataset.editDay; state.activeTab="today"; saveState(); render();});
   }
 }
 
 function render(){renderRules(); renderTabs(); renderContent();}
-document.getElementById("rulesToggle").onclick=()=>{state.rulesOpen=!state.rulesOpen; render();};
+document.getElementById("rulesToggle").onclick=()=>{state.rulesOpen=!state.rulesOpen; saveState(); render();};
 render();
 </script>
 </body>
