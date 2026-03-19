@@ -53,20 +53,6 @@
     .danger-text{color:#fda4af}
     @media (max-width:1100px){.grid-main{grid-template-columns:1fr}.left-col{position:static}.timeline-layout{grid-template-columns:1fr}}
     @media (max-width:700px){.app{padding:12px}.palette-grid{grid-template-columns:1fr}.timeline-grid{min-width:520px}}
-  
-    .mobile-today-toggle{display:none}
-    .mobile-palette-hidden{display:block}
-    @media (max-width:700px){
-      .mobile-today-toggle{display:block}
-      .mobile-palette-hidden{display:none}
-      .mobile-palette-hidden.open{display:block}
-    }
-
-  
-    @media (max-width:700px){
-      .left-col{order:2}
-      .day-editor-mobile-first{order:1}
-    }
 
   </style>
 </head>
@@ -215,7 +201,7 @@ function renderRules(){
 }
 function renderTabs(){
   const el=document.getElementById("tabs");
-  el.innerHTML=["today","week","review"].map(t=>`<button class="btn tab ${state.activeTab===t?"active":""}" data-tab="${t}">${t==="today"?"Today":t==="week"?"This Week":"Review"}</button>`).join("");
+  el.innerHTML=["today","palette","week","review"].map(t=>`<button class="btn tab ${state.activeTab===t?"active":""}" data-tab="${t}">${t==="today"?"Today":t==="palette"?"Palette":t==="week"?"This Week":"Review"}</button>`).join("");
   el.querySelectorAll("[data-tab]").forEach(b=>b.onclick=()=>{state.activeTab=b.dataset.tab; saveState(); render();});
 }
 
@@ -228,26 +214,13 @@ function todayHTML(){
           <div><h2>Today</h2><div class="small" style="margin-top:6px">Auto-selected from current day</div></div>
           <span class="day-badge">${day.day}</span>
         </div>
-        <button class="btn primary mobile-today-toggle" id="mobilePaletteToggle">${state.paletteOpen ? "Hide block palette" : "Show block palette"}</button>
-
-        <div class="mini-card mobile-palette-hidden ${state.paletteOpen ? "open" : ""}">
-          <div class="small" style="margin-bottom:10px">Block palette</div>
-          <div class="palette-grid">
-            ${state.paletteItems.map(item=>`<button class="btn soft" data-palette="${esc(item)}" style="text-align:left"><div style="font-weight:600">${esc(item)}</div></button>`).join("")}
-          </div>
-          <div class="stack" style="margin-top:12px">
-            <input id="newBlockTitle" placeholder="Block name" value="${esc(state.newBlock.title)}">
-            <input id="newBlockDuration" placeholder="Write your own duration" value="${esc(state.newBlock.duration)}">
-            <select id="newBlockStartTime">
-              ${slots.map(slot=>`<option value="${slot.label}" ${state.newBlock.startTime===slot.label?"selected":""} ${slotTaken(slot.label)?"disabled":""}>${slot.label}${slotTaken(slot.label)?" · occupied":""}</option>`).join("")}
-            </select>
-            <button id="addBlockBtn" class="btn primary">Add block</button>
-          </div>
+        <div class="mini-card">
+          <div class="small">Use the <strong>Palette</strong> tab to add new blocks.</div>
         </div>
 
         </div></section>
 
-    <section class="stack day-editor-mobile-first">
+    <section class="stack">
       <div class="card">
         <div class="section-title">
           <div><h2>Day editor</h2><div class="small" style="margin-top:6px">One block per time slot. No anchor field. No separate time-map settings panel.</div></div>
@@ -283,6 +256,33 @@ function todayHTML(){
       </div>
     </section>
   </div>`;
+}
+
+function paletteHTML(){
+  const day=selectedDayData();
+  return `<section class="card">
+    <div class="section-title">
+      <div><h2>Palette</h2><div class="small" style="margin-top:6px">Choose a block, set duration and time, then add it to ${day.day}.</div></div>
+      <span class="day-badge">${day.day}</span>
+    </div>
+    <div class="mini-card">
+      <div class="small" style="margin-bottom:10px">Block palette</div>
+      <div class="palette-grid">
+        ${state.paletteItems.map(item=>`<button class="btn soft" data-palette="${esc(item)}" style="text-align:left"><div style="font-weight:600">${esc(item)}</div></button>`).join("")}
+      </div>
+      <div class="stack" style="margin-top:12px">
+        <input id="newBlockTitle" placeholder="Block name" value="${esc(state.newBlock.title)}">
+        <input id="newBlockDuration" placeholder="Write your own duration" value="${esc(state.newBlock.duration)}">
+        <select id="newBlockStartTime">
+          ${slots.map(slot=>`<option value="${slot.label}" ${state.newBlock.startTime===slot.label?"selected":""} ${slotTaken(slot.label)?"disabled":""}>${slot.label}${slotTaken(slot.label)?" · occupied":""}</option>`).join("")}
+        </select>
+        <button id="addBlockBtn" class="btn primary">Add block</button>
+      </div>
+    </div>
+    <div class="mini-card">
+      <div class="small">Tip: after adding, switch back to <strong>Today</strong> to view and adjust it on the timeline.</div>
+    </div>
+  </section>`;
 }
 
 function weekHTML(){
@@ -327,7 +327,7 @@ function reviewHTML(){
 
 function renderContent(){
   const el=document.getElementById("appContent");
-  el.innerHTML=state.activeTab==="today"?todayHTML():state.activeTab==="week"?weekHTML():reviewHTML();
+  el.innerHTML=state.activeTab==="today"?todayHTML():state.activeTab==="palette"?paletteHTML():state.activeTab==="week"?weekHTML():reviewHTML();
 
   if(state.activeTab==="today"){
     document.querySelectorAll("[data-palette]").forEach(b=>b.onclick=()=>{state.newBlock.title=b.dataset.palette; saveState(); render();});
