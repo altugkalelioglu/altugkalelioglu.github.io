@@ -1,0 +1,8 @@
+{
+  "name": "Life Productivity Control Panel",
+  "short_name": "Life OS",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#020817",
+  "theme_color": "#020817"
+}

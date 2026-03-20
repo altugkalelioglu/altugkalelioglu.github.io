@@ -6,6 +6,7 @@
   <meta name="theme-color" content="#020817" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <link rel="manifest" href="manifest.webmanifest" />
   <title>Life Productivity Control Panel</title>
   <style>
     :root{
@@ -22,7 +23,7 @@
     .subtitle{color:var(--muted);max-width:900px;margin-top:10px}
     .btn{border:1px solid var(--border2);background:var(--panel);color:var(--text);border-radius:16px;padding:12px 14px;cursor:pointer;font:inherit;min-height:46px}
     .btn:hover{border-color:#475569}.btn.primary{background:rgba(var(--indigo),.18);border-color:rgba(var(--indigo),.35);color:#c7d2fe}
-    .btn.soft{background:#0b1220}.btn.selected-task{border:2px solid #ffffff !important; box-shadow:0 0 0 2px rgba(255,255,255,.18) inset; background:rgba(var(--indigo),.22) !important;}.btn.danger{background:rgba(var(--rose),.12);border-color:rgba(var(--rose),.22);color:#fecdd3}
+    .btn.soft{background:#0b1220}.btn.selected-task{border:2px solid #ffffff !important; box-shadow:0 0 0 2px rgba(255,255,255,.18) inset; background:rgba(var(--indigo),.30) !important; color:#ffffff !important;}.btn.danger{background:rgba(var(--rose),.12);border-color:rgba(var(--rose),.22);color:#fecdd3}
     .tabs{display:flex;gap:10px;flex-wrap:wrap;margin:14px 0 18px;position:sticky;top:0;z-index:20;background:linear-gradient(180deg,rgba(2,6,23,.98),rgba(2,6,23,.86));padding:8px 0}.tab.active{background:rgba(var(--indigo),.18);border-color:rgba(var(--indigo),.35);color:#c7d2fe}
     .collapsible{overflow:hidden;transition:max-height .25s ease,opacity .2s ease}.hidden-collapsed{max-height:0;opacity:0}.shown-collapsed{max-height:500px;opacity:1;margin-bottom:18px}
     .card{background:rgba(15,23,42,.92);border:1px solid var(--border);border-radius:28px;box-shadow:var(--shadow);padding:18px}
@@ -141,6 +142,7 @@ function loadState(){
       state.week=defaultWeek();
     }
     if(parsed.selectedDay) state.selectedDay=parsed.selectedDay;
+    state.selectedDay=getTodayLabel();
     if(parsed.activeTab) state.activeTab=parsed.activeTab;
     if(parsed.newBlock) state.newBlock=parsed.newBlock;
     if(parsed.usage) state.usage=parsed.usage;
@@ -326,16 +328,33 @@ function renderContent(){
   el.innerHTML=state.activeTab==="today"?todayHTML():state.activeTab==="task"?taskHTML():state.activeTab==="week"?weekHTML():reviewHTML();
 
   if(state.activeTab==="today"){
-    document.querySelectorAll("[data-task]").forEach(b=>b.onclick=()=>{state.newBlock.title=b.dataset.task; saveState(); render();});
-    document.getElementById("newBlockTitle").oninput=e=>{state.newBlock.title=e.target.value; saveState();};
-    document.getElementById("newBlockDuration").oninput=e=>{state.newBlock.duration=e.target.value; saveState();};
-    document.getElementById("newBlockStartTime").onchange=e=>{state.newBlock.startTime=e.target.value; saveState();};
-    document.getElementById("addBlockBtn").onclick=addBlock;
     document.querySelectorAll("[data-remove-grid]").forEach(b=>b.onclick=()=>removeBlock(Number(b.dataset.removeGrid)));
     document.querySelectorAll("[data-day]").forEach(b=>b.onclick=()=>{state.selectedDay=b.dataset.day; saveState(); render();});
-    document.querySelectorAll("[data-duration-id]").forEach(i=>i.oninput=e=>updateBlockDuration(Number(i.dataset.durationId),e.target.value));
-    document.querySelectorAll("[data-time-id]").forEach(s=>s.onchange=e=>updateBlockStartTime(Number(s.dataset.timeId),e.target.value));
   }
+
+  if(state.activeTab==="task"){
+    document.querySelectorAll("[data-task]").forEach(b=>b.onclick=()=>{
+      state.newBlock.title=b.dataset.task;
+      saveState();
+      render();
+      setTimeout(()=>{
+        const input=document.getElementById("newBlockTitle");
+        if(input){
+          input.focus();
+          input.scrollIntoView({behavior:"smooth", block:"center"});
+        }
+      },0);
+    });
+    const titleInput=document.getElementById("newBlockTitle");
+    const durationInput=document.getElementById("newBlockDuration");
+    const startSelect=document.getElementById("newBlockStartTime");
+    const addBtn=document.getElementById("addBlockBtn");
+    if(titleInput) titleInput.oninput=e=>{state.newBlock.title=e.target.value; saveState();};
+    if(durationInput) durationInput.oninput=e=>{state.newBlock.duration=e.target.value; saveState();};
+    if(startSelect) startSelect.onchange=e=>{state.newBlock.startTime=e.target.value; saveState();};
+    if(addBtn) addBtn.onclick=()=>{addBlock(); state.activeTab="today"; saveState(); render();};
+  }
+
   if(state.activeTab==="week"){
     document.querySelectorAll("[data-edit-day]").forEach(b=>b.onclick=()=>{state.selectedDay=b.dataset.editDay; state.activeTab="today"; saveState(); render();});
   }
@@ -345,5 +364,14 @@ function render(){renderRules(); renderTabs(); renderContent();}
 document.getElementById("rulesToggle").onclick=()=>{state.rulesOpen=!state.rulesOpen; saveState(); render();};
 render();
 </script>
+
+<script>
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('./sw.js').catch(() => {});
+  });
+}
+</script>
+
 </body>
 </html>
