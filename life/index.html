@@ -22,7 +22,7 @@
     .subtitle{color:var(--muted);max-width:900px;margin-top:10px}
     .btn{border:1px solid var(--border2);background:var(--panel);color:var(--text);border-radius:16px;padding:12px 14px;cursor:pointer;font:inherit;min-height:46px}
     .btn:hover{border-color:#475569}.btn.primary{background:rgba(var(--indigo),.18);border-color:rgba(var(--indigo),.35);color:#c7d2fe}
-    .btn.soft{background:#0b1220}.btn.danger{background:rgba(var(--rose),.12);border-color:rgba(var(--rose),.22);color:#fecdd3}
+    .btn.soft{background:#0b1220}.btn.selected-task{border:2px solid #ffffff !important; box-shadow:0 0 0 2px rgba(255,255,255,.18) inset; background:rgba(var(--indigo),.22) !important;}.btn.danger{background:rgba(var(--rose),.12);border-color:rgba(var(--rose),.22);color:#fecdd3}
     .tabs{display:flex;gap:10px;flex-wrap:wrap;margin:14px 0 18px;position:sticky;top:0;z-index:20;background:linear-gradient(180deg,rgba(2,6,23,.98),rgba(2,6,23,.86));padding:8px 0}.tab.active{background:rgba(var(--indigo),.18);border-color:rgba(var(--indigo),.35);color:#c7d2fe}
     .collapsible{overflow:hidden;transition:max-height .25s ease,opacity .2s ease}.hidden-collapsed{max-height:0;opacity:0}.shown-collapsed{max-height:500px;opacity:1;margin-bottom:18px}
     .card{background:rgba(15,23,42,.92);border:1px solid var(--border);border-radius:28px;box-shadow:var(--shadow);padding:18px}
@@ -35,7 +35,7 @@
     .small{font-size:12px;color:var(--muted)}
     input,select{width:100%;background:#020617;border:1px solid var(--border2);color:var(--text);border-radius:14px;padding:10px 12px;font:inherit;outline:none}
     .stack{display:grid;gap:12px}.placed-block{display:flex;justify-content:space-between;gap:10px;align-items:flex-start}
-    .palette-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+    .task-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
     .timeline-layout{display:grid;grid-template-columns:230px 1fr;gap:16px}
     .block-editor-list{display:grid;gap:10px}
     .block-editor-card{border:1px solid var(--border);background:#0b1220;border-radius:18px;padding:14px}
@@ -52,7 +52,7 @@
     .day-badge{display:inline-flex;padding:6px 10px;border-radius:999px;font-size:12px;border:1px solid rgba(var(--indigo),.35);background:rgba(var(--indigo),.18);color:#c7d2fe}
     .danger-text{color:#fda4af}
     @media (max-width:1100px){.grid-main{grid-template-columns:1fr}.left-col{position:static}.timeline-layout{grid-template-columns:1fr}}
-    @media (max-width:700px){.app{padding:12px}.palette-grid{grid-template-columns:1fr}.timeline-grid{min-width:520px}}
+    @media (max-width:700px){.app{padding:12px}.task-grid{grid-template-columns:1fr}.timeline-grid{min-width:520px}}
 
   </style>
 </head>
@@ -91,7 +91,7 @@ const state={
     ["Toilet","Target 5 min"],
     ["Dating admin","Max 90 min"]
   ],
-  paletteItems:["Gym","Surf","Pilates","Rowing","Russian","Shower","Twitter","Dating admin","Toilet","Diction","Flight","Meal","Pre-flight prep","Book"],
+  taskItems:["Gym","Surf","Pilates","Rowing","Russian","Shower","Twitter","Dating admin","Toilet","Diction","Flight","Meal","Pre-flight prep","Book"],
   week:[]
 };
 
@@ -201,7 +201,7 @@ function renderRules(){
 }
 function renderTabs(){
   const el=document.getElementById("tabs");
-  el.innerHTML=["today","palette","week","review"].map(t=>`<button class="btn tab ${state.activeTab===t?"active":""}" data-tab="${t}">${t==="today"?"Today":t==="palette"?"Palette":t==="week"?"This Week":"Review"}</button>`).join("");
+  el.innerHTML=["today","task","week","review"].map(t=>`<button class="btn tab ${state.activeTab===t?"active":""}" data-tab="${t}">${t==="today"?"Today":t==="task"?"Tasks":t==="week"?"This Week":"Review"}</button>`).join("");
   el.querySelectorAll("[data-tab]").forEach(b=>b.onclick=()=>{state.activeTab=b.dataset.tab; saveState(); render();});
 }
 
@@ -211,14 +211,10 @@ function todayHTML(){
     <section class="left-col">
       <div class="card stack">
         <div class="section-title">
-          <div><h2>Today</h2><div class="small" style="margin-top:6px">Auto-selected from current day</div></div>
+          <div><h2>Today</h2></div>
           <span class="day-badge">${day.day}</span>
         </div>
-        <div class="mini-card">
-          <div class="small">Use the <strong>Palette</strong> tab to add new blocks.</div>
-        </div>
-
-        </div></section>
+                </div></section>
 
     <section class="stack">
       <div class="card">
@@ -258,25 +254,25 @@ function todayHTML(){
   </div>`;
 }
 
-function paletteHTML(){
+function taskHTML(){
   const day=selectedDayData();
   return `<section class="card">
     <div class="section-title">
-      <div><h2>Palette</h2><div class="small" style="margin-top:6px">Choose a block, set duration and time, then add it to ${day.day}.</div></div>
+      <div><h2>Tasks</h2><div class="small" style="margin-top:6px">Choose a task, set duration and time, then add it to ${day.day}.</div></div>
       <span class="day-badge">${day.day}</span>
     </div>
     <div class="mini-card">
-      <div class="small" style="margin-bottom:10px">Block palette</div>
-      <div class="palette-grid">
-        ${state.paletteItems.map(item=>`<button class="btn soft" data-palette="${esc(item)}" style="text-align:left"><div style="font-weight:600">${esc(item)}</div></button>`).join("")}
+      <div class="small" style="margin-bottom:10px">Block task</div>
+      <div class="task-grid">
+        ${state.taskItems.map(item=>`<button class="btn soft ${state.newBlock.title===item?"selected-task":""}" data-task="${esc(item)}" style="text-align:left"><div style="font-weight:600">${esc(item)}</div></button>`).join("")}
       </div>
       <div class="stack" style="margin-top:12px">
-        <input id="newBlockTitle" placeholder="Block name" value="${esc(state.newBlock.title)}">
+        <input id="newBlockTitle" placeholder="Task" value="${esc(state.newBlock.title)}">
         <input id="newBlockDuration" placeholder="Write your own duration" value="${esc(state.newBlock.duration)}">
         <select id="newBlockStartTime">
           ${slots.map(slot=>`<option value="${slot.label}" ${state.newBlock.startTime===slot.label?"selected":""} ${slotTaken(slot.label)?"disabled":""}>${slot.label}${slotTaken(slot.label)?" · occupied":""}</option>`).join("")}
         </select>
-        <button id="addBlockBtn" class="btn primary">Add block</button>
+        <button id="addBlockBtn" class="btn primary">Add task</button>
       </div>
     </div>
     <div class="mini-card">
@@ -327,10 +323,10 @@ function reviewHTML(){
 
 function renderContent(){
   const el=document.getElementById("appContent");
-  el.innerHTML=state.activeTab==="today"?todayHTML():state.activeTab==="palette"?paletteHTML():state.activeTab==="week"?weekHTML():reviewHTML();
+  el.innerHTML=state.activeTab==="today"?todayHTML():state.activeTab==="task"?taskHTML():state.activeTab==="week"?weekHTML():reviewHTML();
 
   if(state.activeTab==="today"){
-    document.querySelectorAll("[data-palette]").forEach(b=>b.onclick=()=>{state.newBlock.title=b.dataset.palette; saveState(); render();});
+    document.querySelectorAll("[data-task]").forEach(b=>b.onclick=()=>{state.newBlock.title=b.dataset.task; saveState(); render();});
     document.getElementById("newBlockTitle").oninput=e=>{state.newBlock.title=e.target.value; saveState();};
     document.getElementById("newBlockDuration").oninput=e=>{state.newBlock.duration=e.target.value; saveState();};
     document.getElementById("newBlockStartTime").onchange=e=>{state.newBlock.startTime=e.target.value; saveState();};
