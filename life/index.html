@@ -6,7 +6,6 @@
   <meta name="theme-color" content="#020817" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-  <link rel="manifest" href="manifest.webmanifest" />
   <title>Life Productivity Control Panel</title>
   <style>
     :root{
@@ -157,6 +156,7 @@ state.week=defaultWeek();
 loadState();
 
 function selectedDayData(){return state.week.find(d=>d.day===state.selectedDay)||state.week[0];}
+function currentTodayData(){const today=getTodayLabel(); return state.week.find(d=>d.day===today)||state.week[0];}
 function isOverCap(block){return Object.prototype.hasOwnProperty.call(RULE_CAPS, block.title) && block.durationMin>RULE_CAPS[block.title];}
 
 function reviewItems(){
@@ -177,9 +177,8 @@ function reviewItems(){
 }
 
 function addBlock(){
-  const day=selectedDayData();
   if(!state.newBlock.title.trim() || !state.newBlock.duration.trim()) return;
-  if(day.blocks.some(b=>b.startTime===state.newBlock.startTime)) return;
+  if(slotTaken(state.newBlock.startTime,state.newBlock.duration)) return;
   state.week=state.week.map(d=>d.day!==state.selectedDay?d:{...d,blocks:[...d.blocks,enrich({id:Date.now(),title:state.newBlock.title,startTime:state.newBlock.startTime,duration:state.newBlock.duration})].sort((a,b)=>(a.startMin??0)-(b.startMin??0))});
   state.newBlock={...state.newBlock,title:"",duration:""};
   saveState();
@@ -188,13 +187,14 @@ function addBlock(){
 function removeBlock(id){state.week=state.week.map(d=>d.day===state.selectedDay?{...d,blocks:d.blocks.filter(b=>b.id!==id)}:d); saveState(); render();}
 function updateBlockDuration(id,value){state.week=state.week.map(d=>d.day!==state.selectedDay?d:{...d,blocks:d.blocks.map(b=>b.id===id?enrich({...b,duration:value}):b).sort((a,b)=>(a.startMin??0)-(b.startMin??0))}); saveState(); render();}
 function updateBlockStartTime(id,value){
-  const day=selectedDayData();
-  if(day.blocks.some(b=>b.id!==id&&b.startTime===value)) return;
+  const block=(selectedDayData().blocks.find(b=>b.id===id)||{});
+  if(slotTaken(value,block.duration,id)) return;
   state.week=state.week.map(d=>d.day!==state.selectedDay?d:{...d,blocks:d.blocks.map(b=>b.id===id?enrich({...b,startTime:value}):b).sort((a,b)=>(a.startMin??0)-(b.startMin??0))});
   saveState();
   render();
 }
-function slotTaken(label){return selectedDayData().blocks.some(b=>b.startTime===label);}
+function rangesOverlap(startA,endA,startB,endB){return startA < endB && startB < endA;}
+function slotTaken(label,durationValue,ignoreId){const day=selectedDayData(); const start=parseTime(label); const duration=parseDur(durationValue || state.newBlock.duration); if(start===null || !duration){return day.blocks.some(b=>b.startTime===label && b.id!==ignoreId);} const end=start+duration; return day.blocks.some(b=>{if(ignoreId && b.id===ignoreId) return false; if(b.startMin===null || !b.durationMin) return false; return rangesOverlap(start,end,b.startMin,b.startMin+b.durationMin);});}
 
 function renderRules(){
   const p=document.getElementById("rulesPanel");
@@ -208,7 +208,7 @@ function renderTabs(){
 }
 
 function todayHTML(){
-  const day=selectedDayData(), timeHeight=slots.length*ROW_HEIGHT;
+  const day=currentTodayData(), timeHeight=slots.length*ROW_HEIGHT;
   return `<div class="grid-main">
     <section class="left-col">
       <div class="card stack">
@@ -221,7 +221,7 @@ function todayHTML(){
     <section class="stack">
       <div class="card">
         <div class="section-title">
-          <div><h2>Day editor</h2><div class="small" style="margin-top:6px">One block per time slot. No anchor field. No separate time-map settings panel.</div></div>
+          <div><h2>Day editor</h2></div>
           <div style="display:flex;gap:8px;flex-wrap:wrap">${state.week.map(d=>`<button class="btn ${state.selectedDay===d.day?"primary":"soft"}" data-day="${d.day}">${d.day}</button>`).join("")}</div>
         </div>
 
@@ -272,7 +272,7 @@ function taskHTML(){
         <input id="newBlockTitle" placeholder="Task" value="${esc(state.newBlock.title)}">
         <input id="newBlockDuration" placeholder="Write your own duration" value="${esc(state.newBlock.duration)}">
         <select id="newBlockStartTime">
-          ${slots.map(slot=>`<option value="${slot.label}" ${state.newBlock.startTime===slot.label?"selected":""} ${slotTaken(slot.label)?"disabled":""}>${slot.label}${slotTaken(slot.label)?" · occupied":""}</option>`).join("")}
+          ${slots.map(slot=>`<option value="${slot.label}" ${state.newBlock.startTime===slot.label?"selected":""} ${slotTaken(slot.label, state.newBlock.duration)?"disabled":""}>${slot.label}${slotTaken(slot.label, state.newBlock.duration)?" · occupied":""}</option>`).join("")}
         </select>
         <button id="addBlockBtn" class="btn primary">Add task</button>
       </div>
@@ -364,14 +364,5 @@ function render(){renderRules(); renderTabs(); renderContent();}
 document.getElementById("rulesToggle").onclick=()=>{state.rulesOpen=!state.rulesOpen; saveState(); render();};
 render();
 </script>
-
-<script>
-if ('serviceWorker' in navigator) {
-  window.addEventListener('load', () => {
-    navigator.serviceWorker.register('./sw.js').catch(() => {});
-  });
-}
-</script>
-
 </body>
 </html>
