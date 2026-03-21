@@ -96,6 +96,16 @@ const state={
 };
 
 function getTodayLabel(){const d=new Date().getDay(); return DAYS[d===0?6:d-1];}
+
+function futureDays(){
+  const today=getTodayLabel();
+  const idx=DAYS.indexOf(today);
+  if(idx<0) return [];
+  return DAYS.slice(idx+1);
+}
+function planningDays(){
+  return [getTodayLabel(), ...futureDays()];
+}
 function esc(s){return String(s).replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;").replaceAll('"',"&quot;").replaceAll("'","&#39;");}
 function parseTime(v){if(!v||!v.includes(":")) return null; const [h,m]=v.split(":").map(Number); return Number.isNaN(h)||Number.isNaN(m)?null:h*60+m;}
 function fmtTime(t){const s=((t%1440)+1440)%1440,h=Math.floor(s/60),m=s%60; return `${String(h).padStart(2,"0")}:${String(m).padStart(2,"0")}`;}
@@ -257,28 +267,42 @@ function todayHTML(){
 }
 
 function taskHTML(){
-  const day=selectedDayData();
+  const availableDays = planningDays();
+  const targetDay = state.newBlock.targetDay || getTodayLabel();
+  const day = state.week.find(d=>d.day===targetDay) || selectedDayData();
+  const occupiedAt = (slotLabel) => {
+    const start=parseTime(slotLabel);
+    const dur=parseDur(state.newBlock.duration);
+    return day.blocks.some(b=>{
+      if(start===null || !dur || b.startMin===null || !b.durationMin) return b.startTime===slotLabel;
+      return (start < b.startMin + b.durationMin) && (b.startMin < start + dur);
+    });
+  };
   return `<section class="card">
     <div class="section-title">
-      <div><h2>Tasks</h2><div class="small" style="margin-top:6px">Choose a task, set duration and time, then add it to ${day.day}.</div></div>
+      <div><h2>Tasks</h2><div class="small" style="margin-top:6px">Choose a task, set duration, time, and day.</div></div>
       <span class="day-badge">${day.day}</span>
     </div>
     <div class="mini-card">
-      <div class="small" style="margin-bottom:10px">Block task</div>
-      <div class="task-grid">
+      <div class="small" style="margin-bottom:10px">Tasks</div>
+      <div class="palette-grid">
         ${state.taskItems.map(item=>`<button class="btn soft ${state.newBlock.title===item?"selected-task":""}" data-task="${esc(item)}" style="text-align:left"><div style="font-weight:600">${esc(item)}</div></button>`).join("")}
       </div>
       <div class="stack" style="margin-top:12px">
+        <label class="small" for="newBlockTitle">Task</label>
         <input id="newBlockTitle" placeholder="Task" value="${esc(state.newBlock.title)}">
+        <label class="small" for="newBlockDuration">Duration</label>
         <input id="newBlockDuration" placeholder="Write your own duration" value="${esc(state.newBlock.duration)}">
+        <label class="small" for="newBlockTargetDay">Day</label>
+        <select id="newBlockTargetDay">
+          ${availableDays.map(fd=>`<option value="${fd}" ${targetDay===fd?"selected":""}>${fd===getTodayLabel()?"Today ("+fd+")":fd}</option>`).join("")}
+        </select>
+        <label class="small" for="newBlockStartTime">Start time</label>
         <select id="newBlockStartTime">
-          ${slots.map(slot=>`<option value="${slot.label}" ${state.newBlock.startTime===slot.label?"selected":""} ${slotTaken(slot.label, state.newBlock.duration)?"disabled":""}>${slot.label}${slotTaken(slot.label, state.newBlock.duration)?" · occupied":""}</option>`).join("")}
+          ${slots.map(slot=>`<option value="${slot.label}" ${state.newBlock.startTime===slot.label?"selected":""} ${occupiedAt(slot.label)?"disabled":""}>${slot.label}${occupiedAt(slot.label)?" · occupied":""}</option>`).join("")}
         </select>
         <button id="addBlockBtn" class="btn primary">Add task</button>
       </div>
-    </div>
-    <div class="mini-card">
-      <div class="small">Tip: after adding, switch back to <strong>Today</strong> to view and adjust it on the timeline.</div>
     </div>
   </section>`;
 }
@@ -339,18 +363,17 @@ function renderContent(){
       render();
       setTimeout(()=>{
         const input=document.getElementById("newBlockTitle");
-        if(input){
-          input.focus();
-          input.scrollIntoView({behavior:"smooth", block:"center"});
-        }
+        if(input){ input.focus(); input.scrollIntoView({behavior:"smooth", block:"center"}); }
       },0);
     });
     const titleInput=document.getElementById("newBlockTitle");
     const durationInput=document.getElementById("newBlockDuration");
+    const targetDaySelect=document.getElementById("newBlockTargetDay");
     const startSelect=document.getElementById("newBlockStartTime");
     const addBtn=document.getElementById("addBlockBtn");
     if(titleInput) titleInput.oninput=e=>{state.newBlock.title=e.target.value; saveState();};
-    if(durationInput) durationInput.oninput=e=>{state.newBlock.duration=e.target.value; saveState();};
+    if(durationInput) durationInput.oninput=e=>{state.newBlock.duration=e.target.value; saveState(); render();};
+    if(targetDaySelect) targetDaySelect.onchange=e=>{state.newBlock.targetDay=e.target.value; saveState(); render();};
     if(startSelect) startSelect.onchange=e=>{state.newBlock.startTime=e.target.value; saveState();};
     if(addBtn) addBtn.onclick=()=>{addBlock(); state.activeTab="today"; saveState(); render();};
   }
