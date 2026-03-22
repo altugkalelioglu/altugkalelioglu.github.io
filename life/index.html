@@ -125,6 +125,7 @@ function defaultWeek(){return [
 function saveState(){
   const payload={
     selectedDay: state.selectedDay,
+    editorDay: state.editorDay,
     activeTab: state.activeTab,
     newBlock: state.newBlock,
     usage: state.usage,
@@ -151,6 +152,7 @@ function loadState(){
       state.week=defaultWeek();
     }
     if(parsed.selectedDay) state.selectedDay=parsed.selectedDay;
+    if(parsed.editorDay) state.editorDay=parsed.editorDay;
     state.selectedDay=getTodayLabel();
     if(parsed.activeTab) state.activeTab=parsed.activeTab;
     if(parsed.newBlock) state.newBlock=parsed.newBlock;
@@ -167,6 +169,7 @@ loadState();
 
 function selectedDayData(){return state.week.find(d=>d.day===state.selectedDay)||state.week[0];}
 function currentTodayData(){const today=getTodayLabel(); return state.week.find(d=>d.day===today)||state.week[0];}
+function currentEditorData(){return state.week.find(d=>d.day===state.editorDay)||state.week[0];}
 function isOverCap(block){return Object.prototype.hasOwnProperty.call(RULE_CAPS, block.title) && block.durationMin>RULE_CAPS[block.title];}
 
 function reviewItems(){
@@ -213,7 +216,7 @@ function renderRules(){
 }
 function renderTabs(){
   const el=document.getElementById("tabs");
-  el.innerHTML=["today","task","week","review"].map(t=>`<button class="btn tab ${state.activeTab===t?"active":""}" data-tab="${t}">${t==="today"?"Today":t==="task"?"Tasks":t==="week"?"This Week":"Review"}</button>`).join("");
+  el.innerHTML=["today","edit","task","week","review"].map(t=>`<button class="btn tab ${state.activeTab===t?"active":""}" data-tab="${t}">${t==="today"?"Today":t==="edit"?"Day Editor":t==="task"?"Tasks":t==="week"?"This Week":"Review"}</button>`).join("");
   el.querySelectorAll("[data-tab]").forEach(b=>b.onclick=()=>{state.activeTab=b.dataset.tab; saveState(); render();});
 }
 
@@ -307,6 +310,60 @@ function taskHTML(){
   </section>`;
 }
 
+function editHTML(){
+  const day=currentEditorData(), timeHeight=slots.length*ROW_HEIGHT;
+  return `<div class="grid-main">
+    <section class="left-col">
+      <div class="card stack">
+        <div class="section-title">
+          <div><h2>Day Editor</h2></div>
+          <span class="day-badge">${day.day}</span>
+        </div>
+        <div class="mini-card">
+          <div class="small" style="margin-bottom:10px">Selected day</div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap">${state.week.map(d=>`<button class="btn ${state.editorDay===d.day?"primary":"soft"}" data-edit-day-switch="${d.day}">${d.day}</button>`).join("")}</div>
+        </div>
+      </div>
+    </section>
+
+    <section class="stack">
+      <div class="card">
+        <div class="section-title">
+          <div><h2>${day.day}</h2></div>
+        </div>
+
+        <div class="timeline-layout">
+          <div class="timeline-wrap">
+            <div class="timeline-grid">
+              <div class="time-col" style="height:${timeHeight}px">
+                ${slots.map((s,i)=>`<div class="time-label" style="top:${i*ROW_HEIGHT-7}px">${s.label.endsWith(":00")?s.label:""}</div>`).join("")}
+              </div>
+              <div class="calendar" style="height:${timeHeight}px">
+                ${slots.map((s,i)=>`<div class="line ${s.label.endsWith(":00")?"hour":""}" style="top:${i*ROW_HEIGHT}px;height:${ROW_HEIGHT}px"></div>`).join("")}
+                ${day.blocks.map(b=>{
+                  const start=parseTime(b.startTime); if(start===null) return "";
+                  const top=((start-TIMELINE_START)/SLOT_MINUTES)*ROW_HEIGHT;
+                  const h=Math.max((b.durationMin/SLOT_MINUTES)*ROW_HEIGHT-2,36);
+                  return `<div class="event ${isOverCap(b)?'over':''}" style="top:${top}px;height:${h}px">
+                    <div style="display:flex;justify-content:space-between;gap:8px;align-items:flex-start">
+                      <div style="min-width:0">
+                        <div class="event-title">${esc(b.title)}</div>
+                        <div class="event-time">${b.startTime} — ${b.endTime}</div>
+                        <div class="small ${isOverCap(b)?'danger-text':''}" style="margin-top:4px">${fmtDur(b.durationMin)}${isOverCap(b)?' · over cap':''}</div>
+                      </div>
+                      <button class="btn danger" data-remove-edit="${b.id}" style="padding:4px 8px;min-height:auto;border-radius:999px;line-height:1">×</button>
+                    </div>
+                  </div>`;
+                }).join("")}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </div>`;
+}
+
 function weekHTML(){
   return `<section class="card">
     <div class="section-title">
@@ -349,11 +406,16 @@ function reviewHTML(){
 
 function renderContent(){
   const el=document.getElementById("appContent");
-  el.innerHTML=state.activeTab==="today"?todayHTML():state.activeTab==="task"?taskHTML():state.activeTab==="week"?weekHTML():reviewHTML();
+  el.innerHTML=state.activeTab==="today"?todayHTML():state.activeTab==="edit"?editHTML():state.activeTab==="task"?taskHTML():state.activeTab==="week"?weekHTML():reviewHTML();
 
   if(state.activeTab==="today"){
     document.querySelectorAll("[data-remove-grid]").forEach(b=>b.onclick=()=>removeBlock(Number(b.dataset.removeGrid)));
     document.querySelectorAll("[data-day]").forEach(b=>b.onclick=()=>{state.selectedDay=b.dataset.day; saveState(); render();});
+  }
+
+  if(state.activeTab==="edit"){
+    document.querySelectorAll("[data-remove-edit]").forEach(b=>b.onclick=()=>removeBlock(Number(b.dataset.removeEdit)));
+    document.querySelectorAll("[data-edit-day-switch]").forEach(b=>b.onclick=()=>{state.editorDay=b.dataset.editDaySwitch; saveState(); render();});
   }
 
   if(state.activeTab==="task"){
@@ -372,14 +434,14 @@ function renderContent(){
     const startSelect=document.getElementById("newBlockStartTime");
     const addBtn=document.getElementById("addBlockBtn");
     if(titleInput) titleInput.oninput=e=>{state.newBlock.title=e.target.value; saveState();};
-    if(durationInput) durationInput.oninput=e=>{state.newBlock.duration=e.target.value; saveState(); render();};
+    if(durationInput) durationInput.oninput=e=>{state.newBlock.duration=e.target.value; saveState();};
     if(targetDaySelect) targetDaySelect.onchange=e=>{state.newBlock.targetDay=e.target.value; saveState(); render();};
     if(startSelect) startSelect.onchange=e=>{state.newBlock.startTime=e.target.value; saveState();};
     if(addBtn) addBtn.onclick=()=>{addBlock(); state.activeTab="today"; saveState(); render();};
   }
 
   if(state.activeTab==="week"){
-    document.querySelectorAll("[data-edit-day]").forEach(b=>b.onclick=()=>{state.selectedDay=b.dataset.editDay; state.activeTab="today"; saveState(); render();});
+    document.querySelectorAll("[data-edit-day]").forEach(b=>b.onclick=()=>{state.editorDay=b.dataset.editDay; state.activeTab="edit"; saveState(); render();});
   }
 }
 
